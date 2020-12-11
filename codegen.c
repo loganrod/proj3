@@ -227,10 +227,10 @@ static void codegen_func(T_func func)
 {
     int val;
 
-    current_offset_scope = create_offset_scope( current_ofset_scope );
+    current_offset_scope = create_offset_scope( current_offset_scope );
 
     printf( ".text\n" );
-    printf( ".globl %s\n", func=>ident );
+    printf( ".globl %s\n", func->ident );
     printf(".type %s, @function\n", func->ident );
     printf( "%s: \n", func->ident );
 
@@ -244,7 +244,9 @@ static void codegen_func(T_func func)
 
     MOV_TO_OFFSET("%rdi, val", val );
     COMMENT("generate code for the body");
-    codegen_stmtlist( func->returnexpr );
+    codegen_stmtlist( func->stmtlist );
+    COMMENT("generate code for return expression");
+    codegen_expr( func->returnexpr );
     POP("%rax");
 
     COMMENT("emit epilogue" );
@@ -318,7 +320,7 @@ static void codegen_compoundstmt(T_stmt stmt)
 {
     codegen_stmtlist( stmt->compoundstmt.stmtlist );
 
-    codegen_stmtlist( stmt->compoundstmt.decllist );
+    codegen_decllist( stmt->compoundstmt.decllist );
 }
 
 /* expressions */
@@ -393,7 +395,7 @@ static void codegen_binaryexpr(T_expr expr)
     codegen_expr( expr->binaryexpr.left );
 
     COMMENT("generate code for the right operand " );
-    codegen( expr->binaryexpr.right );
+    codegen_expr( expr->binaryexpr.right );
 
     COMMENT("pop the right operand" );
     POP( "%rbx" );
@@ -405,7 +407,7 @@ static void codegen_binaryexpr(T_expr expr)
     {
         case E_op_plus:
             COMMENT("do addition" );
-            ADD("%rbx, %rax" );
+            ADD("%rbx", "%rax" );
 
             COMMENT("push the result");
             PUSH("%rax" );
@@ -414,7 +416,7 @@ static void codegen_binaryexpr(T_expr expr)
             break;
         case E_op_minus:
             COMMENT("do subtraction" );
-            SUB("%rbx, %rax" );
+            SUB("%rbx", "%rax" );
 
             COMMENT("push the result");
             PUSH("%rax" );
@@ -422,7 +424,7 @@ static void codegen_binaryexpr(T_expr expr)
             break;
         case E_op_times:
             COMMENT("do multiplication" );
-            IMUL("%rbx, %rax" );
+            IMUL("%rbx", "%rax" );
 
             COMMENT("push the result");
             PUSH("%rax" );
