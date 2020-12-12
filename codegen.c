@@ -242,7 +242,7 @@ static void codegen_func(T_func func)
 
     val = lookup_offset_in_scope( current_offset_scope, func->paramlist->ident );
 
-    MOV_TO_OFFSET("%rdi, val", val );
+    MOV_TO_OFFSET("%rdi", val );
     COMMENT("generate code for the body");
     codegen_stmtlist( func->stmtlist );
     COMMENT("generate code for return expression");
